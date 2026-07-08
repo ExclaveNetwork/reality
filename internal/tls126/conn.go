@@ -122,6 +122,9 @@ type Conn struct {
 	activeCall atomic.Int32
 
 	tmp [16]byte
+
+	clientHello *clientHelloMsg
+	serverHello *serverHelloMsg
 }
 
 // Access to net.Conn methods.
@@ -163,6 +166,14 @@ func (c *Conn) SetWriteDeadline(t time.Time) error {
 // TLS session.
 func (c *Conn) NetConn() net.Conn {
 	return c.conn
+}
+
+func (c *Conn) Input() bytes.Reader {
+	return c.input
+}
+
+func (c *Conn) RawInput() bytes.Buffer {
+	return c.rawInput
 }
 
 // A halfConn represents one direction of the record layer
@@ -1645,6 +1656,10 @@ func (c *Conn) connectionStateLocked() ConnectionState {
 		state.ekm = c.ekm
 	}
 	state.ECHAccepted = c.echAccepted
+
+	state.clientHello = c.clientHello
+	state.serverHello = c.serverHello
+
 	return state
 }
 

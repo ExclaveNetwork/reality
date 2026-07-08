@@ -897,6 +897,12 @@ func TestCloneNonFuncFields(t *testing.T) {
 			}))
 		case "mutex", "autoSessionTicketKeys", "sessionTicketKeys":
 			continue // these are unexported fields that are handled separately
+		case "RealityPublicKey":
+			f.Set(reflect.ValueOf([]byte{'b'}))
+		case "RealityShortId":
+			f.Set(reflect.ValueOf([8]byte{}))
+		case "RealityClientVersion":
+			f.Set(reflect.ValueOf([3]byte{}))
 		default:
 			t.Errorf("all fields must be accounted for, but saw unknown field %q", fn)
 		}

@@ -202,6 +202,13 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, *keySharePrivateKeys, *echCli
 		}
 	}
 
+	if c.config.RealityPublicKey != nil {
+		err = c.config.makeRealityClientHello(hello, keyShareKeys)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
 	return hello, keyShareKeys, ech, nil
 }
 
@@ -322,6 +329,9 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		c.sendAlert(alertIllegalParameter)
 		return errors.New("tls: downgrade attempt detected, possibly due to a MitM attack or a broken middlebox")
 	}
+
+	c.clientHello = hello
+	c.serverHello = serverHello
 
 	if c.vers == VersionTLS13 {
 		hs := &clientHandshakeStateTLS13{

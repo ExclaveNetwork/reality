@@ -101,6 +101,8 @@ type clientHelloMsg struct {
 	encryptedClientHello             []byte
 	// extensions are only populated on the server-side of a handshake
 	extensions []uint16
+
+	realityAuthKey []byte
 }
 
 func (m *clientHelloMsg) marshalMsg(echInner bool) ([]byte, error) {

@@ -314,6 +314,9 @@ type ConnectionState struct {
 	// testingOnlyPeerSignatureAlgorithm is the signature algorithm used by the
 	// peer to sign the handshake. It is not set for resumed connections.
 	testingOnlyPeerSignatureAlgorithm SignatureScheme
+
+	clientHello *clientHelloMsg
+	serverHello *serverHelloMsg
 }
 
 // ExportKeyingMaterial returns length bytes of exported key material in a new
@@ -328,6 +331,27 @@ type ConnectionState struct {
 // tlsunsafeekm=1.
 func (cs *ConnectionState) ExportKeyingMaterial(label string, context []byte, length int) ([]byte, error) {
 	return cs.ekm(label, context, length)
+}
+
+func (cs *ConnectionState) RealityAuthKey() ([]byte, error) {
+	if cs.clientHello == nil || cs.clientHello.realityAuthKey == nil {
+		return nil, errors.ErrUnsupported
+	}
+	return cs.clientHello.realityAuthKey, nil
+}
+
+func (cs *ConnectionState) RawClientHello() ([]byte, error) {
+	if cs.clientHello == nil || cs.clientHello.original == nil {
+		return nil, errors.ErrUnsupported
+	}
+	return cs.clientHello.original, nil
+}
+
+func (cs *ConnectionState) RawServerHello() ([]byte, error) {
+	if cs.serverHello == nil || cs.serverHello.original == nil {
+		return nil, errors.ErrUnsupported
+	}
+	return cs.serverHello.original, nil
 }
 
 // ClientAuthType declares the policy the server will follow for
@@ -889,6 +913,10 @@ type Config struct {
 	// autoSessionTicketKeys is like sessionTicketKeys but is owned by the
 	// auto-rotation logic. See Config.ticketKeys.
 	autoSessionTicketKeys []ticketKey
+
+	RealityPublicKey     []byte
+	RealityShortId       [8]byte
+	RealityClientVersion [3]byte
 }
 
 // EncryptedClientHelloKey holds a private key that is associated
@@ -996,6 +1024,10 @@ func (c *Config) Clone() *Config {
 		EncryptedClientHelloKeys:            c.EncryptedClientHelloKeys,
 		sessionTicketKeys:                   c.sessionTicketKeys,
 		autoSessionTicketKeys:               c.autoSessionTicketKeys,
+
+		RealityPublicKey:     c.RealityPublicKey,
+		RealityShortId:       c.RealityShortId,
+		RealityClientVersion: c.RealityClientVersion,
 	}
 }
 
