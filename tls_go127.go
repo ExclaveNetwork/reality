@@ -1,4 +1,4 @@
-//go:build go1.27
+//go:build go1.27 && !go1.28
 
 package reality
 
@@ -80,6 +80,7 @@ const (
 	X25519MLKEM768     = tls.X25519MLKEM768
 	SecP256r1MLKEM768  = tls.SecP256r1MLKEM768
 	SecP384r1MLKEM1024 = tls.SecP384r1MLKEM1024
+	MLKEM1024          = tls.MLKEM1024
 
 	NoClientCert               = tls.NoClientCert
 	RequestClientCert          = tls.RequestClientCert

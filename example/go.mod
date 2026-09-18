@@ -1,17 +1,17 @@
 module main
 
-go 1.25.0
+go 1.26.0
 
 replace github.com/exclavenetwork/reality => ../
 
 require (
-	filippo.io/mldsa v0.0.0-20260215214346-43d0283efc3e
+	filippo.io/mldsa v0.0.0-20260711112038-ff3f469cee29
 	github.com/exclavenetwork/reality v0.0.0
-	golang.org/x/net v0.56.0
+	golang.org/x/net v0.59.0
 )
 
 require (
-	golang.org/x/crypto v0.53.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
+	golang.org/x/crypto v0.57.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 )

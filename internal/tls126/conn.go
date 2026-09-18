@@ -168,14 +168,6 @@ func (c *Conn) NetConn() net.Conn {
 	return c.conn
 }
 
-func (c *Conn) Input() bytes.Reader {
-	return c.input
-}
-
-func (c *Conn) RawInput() bytes.Buffer {
-	return c.rawInput
-}
-
 // A halfConn represents one direction of the record layer
 // connection, either sending or receiving.
 type halfConn struct {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build go1.27
+//go:build go1.27 && !go1.28
 
 // TLS low level connection and record layer
 
@@ -167,14 +167,6 @@ func (c *Conn) SetWriteDeadline(t time.Time) error {
 // TLS session.
 func (c *Conn) NetConn() net.Conn {
 	return c.conn
-}
-
-func (c *Conn) Input() bytes.Reader {
-	return c.input
-}
-
-func (c *Conn) RawInput() bytes.Buffer {
-	return c.rawInput
 }
 
 // A halfConn represents one direction of the record layer
