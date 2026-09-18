@@ -143,6 +143,13 @@ type Conn struct {
 	serverHello *serverHelloMsg
 }
 
+func (c *Conn) getMaxUselessRecords() int {
+	if c.config.RealityServerConfig.MaxUselessRecords == 0 {
+		return maxUselessRecords
+	}
+	return c.config.RealityServerConfig.MaxUselessRecords
+}
+
 // Access to net.Conn methods.
 // Cannot just embed net.Conn because that would
 // export the struct field too.
@@ -202,6 +209,9 @@ type halfConn struct {
 
 	level         QUICEncryptionLevel // current QUIC encryption level
 	trafficSecret []byte              // current TLS 1.3 traffic secret
+
+	handshakeLen [7]uint16
+	handshakeBuf []byte
 }
 
 type permanentError struct {
@@ -540,9 +550,41 @@ func (hc *halfConn) encrypt(record, payload []byte, rand io.Reader) ([]byte, err
 
 			// Encrypt the actual ContentType and replace the plaintext one.
 			record = append(record, record[0])
+
+			padding := 0
+			if recordType(record[0]) == recordTypeHandshake && hc.handshakeLen[1] != 0 {
+				switch payload[0] {
+				case typeEncryptedExtensions:
+					padding = int(hc.handshakeLen[2])
+					hc.handshakeLen[2] = 0
+				case typeCertificate:
+					padding = int(hc.handshakeLen[3])
+					hc.handshakeLen[3] = 0
+				case typeCertificateVerify:
+					padding = int(hc.handshakeLen[4])
+					hc.handshakeLen[4] = 0
+				case typeFinished:
+					padding = int(hc.handshakeLen[5])
+					hc.handshakeLen[5] = 0
+				case typeNewSessionTicket:
+					padding = int(hc.handshakeLen[6])
+					hc.handshakeLen[6] = 0
+					record[5] = byte(recordTypeApplicationData)
+					record[6] = 0
+				}
+				padding -= len(record) + c.Overhead()
+				if padding < 0 {
+					return nil, fmt.Errorf("payload[0]: %v, padding: %v", payload[0], padding)
+				}
+				record = append(record, make([]byte, padding)...)
+			}
+
 			record[0] = byte(recordTypeApplicationData)
 
 			n := len(payload) + 1 + c.Overhead()
+
+			n += padding
+
 			record[3] = byte(n >> 8)
 			record[4] = byte(n)
 
@@ -828,7 +870,7 @@ func (c *Conn) readRecordOrCCS(expectChangeCipherSpec bool) error {
 // a warning alert, empty application_data, or a change_cipher_spec in TLS 1.3.
 func (c *Conn) retryReadRecord(expectChangeCipherSpec bool) error {
 	c.retryCount++
-	if c.retryCount > maxUselessRecords {
+	if c.retryCount > c.getMaxUselessRecords() {
 		c.sendAlert(alertUnexpectedMessage)
 		return c.in.setErrorLocked(errors.New("tls: too many ignored records"))
 	}
@@ -1169,6 +1211,15 @@ func (c *Conn) writeHandshakeRecord(msg handshakeMessage, transcript transcriptH
 		transcript.Write(data)
 	}
 
+	if c.out.handshakeBuf != nil && len(data) > 0 && data[0] != typeServerHello {
+		c.out.handshakeBuf = append(c.out.handshakeBuf, data...)
+		if data[0] != typeFinished {
+			return len(data), nil
+		}
+		data = c.out.handshakeBuf
+		c.out.handshakeBuf = nil
+	}
+
 	return c.writeRecordLocked(recordTypeHandshake, data)
 }
 
@@ -1418,7 +1469,7 @@ func (c *Conn) handlePostHandshakeMessage() error {
 		return err
 	}
 	c.retryCount++
-	if c.retryCount > maxUselessRecords {
+	if c.retryCount > c.getMaxUselessRecords() {
 		c.sendAlert(alertUnexpectedMessage)
 		return c.in.setErrorLocked(errors.New("tls: too many non-advancing records"))
 	}

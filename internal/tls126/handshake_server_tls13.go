@@ -79,7 +79,7 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 		return err
 	}
 	c.buffering = true
-	if err := hs.sendServerParameters(); err != nil {
+	if err := hs.sendServerParameters(false); err != nil {
 		return err
 	}
 	if err := hs.sendServerCertificate(); err != nil {
@@ -709,7 +709,7 @@ func illegalClientHelloChange(ch, ch1 *clientHelloMsg) bool {
 		!bytes.Equal(ch.pskModes, ch1.pskModes)
 }
 
-func (hs *serverHandshakeStateTLS13) sendServerParameters() error {
+func (hs *serverHandshakeStateTLS13) sendServerParameters(isReality bool) error {
 	c := hs.c
 
 	if hs.echContext != nil {
@@ -734,8 +734,15 @@ func (hs *serverHandshakeStateTLS13) sendServerParameters() error {
 		return err
 	}
 
-	if _, err := hs.c.writeHandshakeRecord(hs.hello, hs.transcript); err != nil {
-		return err
+	if !isReality {
+		if _, err := hs.c.writeHandshakeRecord(hs.hello, hs.transcript); err != nil {
+			return err
+		}
+	} else {
+		hs.transcript.Write(hs.hello.original)
+		if _, err := hs.c.realityWriteRecord(recordTypeHandshake, hs.hello.original); err != nil {
+			return err
+		}
 	}
 
 	if err := hs.sendDummyChangeCipherSpec(); err != nil {

@@ -34,21 +34,17 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdh"
+	"crypto/hkdf"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
-
-	"golang.org/x/crypto/hkdf"
 )
 
 func (c *Config) makeRealityClientHello(hello *clientHelloMsg, keys *keySharePrivateKeys) error {
-	if len(c.RealityPublicKey) != 32 {
-		return errors.New("invalid public key length")
-	}
 	if keys.ecdhe == nil {
 		return errors.New("nil ecdhe")
 	}
-	publicKey, err := ecdh.X25519().NewPublicKey(c.RealityPublicKey[:])
+	publicKey, err := ecdh.X25519().NewPublicKey(c.RealityClientConfig.PublicKey)
 	if err != nil {
 		return err
 	}
@@ -56,7 +52,12 @@ func (c *Config) makeRealityClientHello(hello *clientHelloMsg, keys *keySharePri
 	if err != nil {
 		return err
 	}
-	if _, err = hkdf.New(sha256.New, authKey, hello.random[:20], []byte("REALITY")).Read(authKey); err != nil {
+	prk, err := hkdf.Extract(sha256.New, authKey, hello.random[:20])
+	if err != nil {
+		return err
+	}
+	authKey, err = hkdf.Expand(sha256.New, prk, "REALITY", 32)
+	if err != nil {
 		return err
 	}
 	hello.sessionId = make([]byte, 32)
@@ -65,11 +66,9 @@ func (c *Config) makeRealityClientHello(hello *clientHelloMsg, keys *keySharePri
 		return err
 	}
 	auth := make([]byte, 16)
-	auth[0] = c.RealityClientVersion[0]
-	auth[1] = c.RealityClientVersion[1]
-	auth[2] = c.RealityClientVersion[2]
-	binary.BigEndian.PutUint32(auth[4:], uint32(c.time().Unix()))
-	copy(auth[8:], c.RealityShortId[:])
+	copy(auth[0:3], c.RealityClientConfig.ClientVersion[:])
+	binary.BigEndian.PutUint32(auth[4:8], uint32(c.time().Unix()))
+	copy(auth[8:16], c.RealityClientConfig.ShortId[:])
 	block, err := aes.NewCipher(authKey)
 	if err != nil {
 		return err

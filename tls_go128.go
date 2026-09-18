@@ -3,6 +3,7 @@
 package reality
 
 import (
+	"context"
 	"net"
 
 	"github.com/exclavenetwork/reality/internal/tls128"
@@ -192,4 +193,21 @@ func VersionName(version uint16) string {
 
 func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
 	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+}
+
+type (
+	RealityClientConfig = tls.RealityClientConfig
+	RealityServerConfig = tls.RealityServerConfig
+)
+
+func RealityServer(ctx context.Context, conn net.Conn, config *Config) (*Conn, error) {
+	return tls.RealityServer(ctx, conn, config)
+}
+
+func NewRealityListener(listener net.Listener, config *Config) net.Listener {
+	return tls.NewRealityListener(listener, config)
+}
+
+func RealityListen(network, laddr string, config *Config) (net.Listener, error) {
+	return tls.RealityListen(network, laddr, config)
 }

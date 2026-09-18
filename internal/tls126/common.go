@@ -936,9 +936,32 @@ type Config struct {
 	// auto-rotation logic. See Config.ticketKeys.
 	autoSessionTicketKeys []ticketKey
 
-	RealityPublicKey     []byte
-	RealityShortId       [8]byte
-	RealityClientVersion [3]byte
+	RealityClientConfig RealityClientConfig
+	RealityServerConfig RealityServerConfig
+}
+
+type RealityClientConfig struct {
+	PublicKey     []byte
+	ShortId       [8]byte
+	ClientVersion [3]byte
+}
+
+type RealityServerConfig struct {
+	PrivateKey  []byte
+	MLDSA65Seed []byte
+	ShortIds    map[[8]byte]struct{}
+	ServerNames map[string]struct{}
+	MaxTimeDiff time.Duration
+	DialContext func(ctx context.Context) (net.Conn, error)
+
+	UploadRateLimit   func(conn net.Conn) net.Conn
+	DownloadRateLimit func(conn net.Conn) net.Conn
+
+	WriteProxyProtoHeader func(source, dest net.Addr, conn net.Conn) (int64, error)
+	UnwrapProxyProtoConn  func(conn net.Conn) (net.Conn, bool)
+
+	GetPostHandshakeRecords func(alpn []string, serverName string) ([]int, bool)
+	MaxUselessRecords       int
 }
 
 // EncryptedClientHelloKey holds a private key that is associated
@@ -1063,9 +1086,29 @@ func (c *Config) Clone() *Config {
 		sessionTicketKeys:                   c.sessionTicketKeys,
 		autoSessionTicketKeys:               c.autoSessionTicketKeys,
 
-		RealityPublicKey:     c.RealityPublicKey,
-		RealityShortId:       c.RealityShortId,
-		RealityClientVersion: c.RealityClientVersion,
+		RealityClientConfig: RealityClientConfig{
+			PublicKey:     c.RealityClientConfig.PublicKey,
+			ShortId:       c.RealityClientConfig.ShortId,
+			ClientVersion: c.RealityClientConfig.ClientVersion,
+		},
+
+		RealityServerConfig: RealityServerConfig{
+			PrivateKey:  c.RealityServerConfig.PrivateKey,
+			MLDSA65Seed: c.RealityServerConfig.MLDSA65Seed,
+			ShortIds:    c.RealityServerConfig.ShortIds,
+			ServerNames: c.RealityServerConfig.ServerNames,
+			MaxTimeDiff: c.RealityServerConfig.MaxTimeDiff,
+			DialContext: c.RealityServerConfig.DialContext,
+
+			UploadRateLimit:   c.RealityServerConfig.UploadRateLimit,
+			DownloadRateLimit: c.RealityServerConfig.DownloadRateLimit,
+
+			WriteProxyProtoHeader: c.RealityServerConfig.WriteProxyProtoHeader,
+			UnwrapProxyProtoConn:  c.RealityServerConfig.UnwrapProxyProtoConn,
+
+			GetPostHandshakeRecords: c.RealityServerConfig.GetPostHandshakeRecords,
+			MaxUselessRecords:       c.RealityServerConfig.MaxUselessRecords,
+		},
 	}
 }
 

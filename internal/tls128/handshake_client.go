@@ -202,7 +202,7 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, *keySharePrivateKeys, *echCli
 		}
 	}
 
-	if c.config.RealityPublicKey != nil {
+	if c.config.RealityClientConfig.PublicKey != nil {
 		err = c.config.makeRealityClientHello(hello, keyShareKeys)
 		if err != nil {
 			return nil, nil, nil, err

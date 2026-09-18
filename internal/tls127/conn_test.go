@@ -377,7 +377,7 @@ func TestKeyUpdateSpamPostHandshakeTLS13(t *testing.T) {
 			return
 		}
 		cs := cipherSuiteTLS13ByID(c.cipherSuite)
-		for i := 0; i <= maxUselessRecords; i++ {
+		for i := 0; i <= c.getMaxUselessRecords(); i++ {
 			c.writeRecordLocked(recordTypeHandshake, ku)
 			c.setWriteTrafficSecret(cs, QUICEncryptionLevelInitial, cs.nextTrafficSecret(c.out.trafficSecret))
 		}

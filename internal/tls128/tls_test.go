@@ -776,7 +776,7 @@ func TestWarningAlertFlood(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i := 0; i < maxUselessRecords+1; i++ {
+	for i := 0; i < conn.getMaxUselessRecords()+1; i++ {
 		conn.sendAlert(alertNoRenegotiation)
 	}
 
@@ -905,12 +905,7 @@ func TestCloneNonFuncFields(t *testing.T) {
 			}))
 		case "mutex", "autoSessionTicketKeys", "sessionTicketKeys":
 			continue // these are unexported fields that are handled separately
-		case "RealityPublicKey":
-			f.Set(reflect.ValueOf([]byte{'b'}))
-		case "RealityShortId":
-			f.Set(reflect.ValueOf([8]byte{}))
-		case "RealityClientVersion":
-			f.Set(reflect.ValueOf([3]byte{}))
+		case "RealityClientConfig", "RealityServerConfig":
 		default:
 			t.Errorf("all fields must be accounted for, but saw unknown field %q", fn)
 		}
