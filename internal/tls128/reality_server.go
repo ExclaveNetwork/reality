@@ -551,7 +551,7 @@ func RealityServer(ctx context.Context, conn net.Conn, config *Config) (*Conn, e
 						plainText := make([]byte, length-16)
 						plainText[0] = byte(recordTypeApplicationData)
 						binary.BigEndian.PutUint16(plainText[1:3], uint16(VersionTLS12))
-						binary.BigEndian.PutUint16(plainText[3:5], uint16(length - 5))
+						binary.BigEndian.PutUint16(plainText[3:5], uint16(length-5))
 						plainText[5] = byte(recordTypeApplicationData)
 						postHandshakeRecord := hs.c.out.cipher.(aead).Seal(plainText[:5], hs.c.out.seq[:], plainText[5:], plainText[:5])
 						hs.c.out.incSeq()
