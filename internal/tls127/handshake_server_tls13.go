@@ -795,8 +795,10 @@ func (hs *serverHandshakeStateTLS13) sendServerParameters(isReality bool) error 
 		encryptedExtensions.earlyData = hs.earlyData
 	}
 
-	if !hs.c.didResume && hs.clientHello.serverName != "" {
-		encryptedExtensions.serverNameAck = true
+	if !isReality {
+		if !hs.c.didResume && hs.clientHello.serverName != "" {
+			encryptedExtensions.serverNameAck = true
+		}
 	}
 
 	// If client sent ECH extension, but we didn't accept it,
