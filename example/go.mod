@@ -5,7 +5,7 @@ go 1.26.0
 replace github.com/exclavenetwork/reality => ../
 
 require (
-	filippo.io/mldsa v0.0.0-20260711112038-ff3f469cee29
+	filippo.io/mldsa v1.0.0
 	github.com/exclavenetwork/reality v0.0.0
 )
 
