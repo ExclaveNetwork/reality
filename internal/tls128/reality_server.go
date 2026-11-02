@@ -55,7 +55,6 @@ import (
 	"math/big"
 	"net"
 	"runtime"
-	"slices"
 	"sync"
 	"time"
 )
@@ -544,9 +543,7 @@ func RealityServer(ctx context.Context, conn net.Conn, config *Config) (*Conn, e
 			}
 
 			if records := config.RealityServerConfig.GetPostHandshakeRecords; records != nil {
-				if lengths, ok := records(hs.clientHello.alpnProtocols, hs.clientHello.serverName); ok && !slices.ContainsFunc(lengths, func(length int) bool {
-					return length < 22 || length > 16389
-				}) {
+				if lengths, ok := records(hs.clientHello.alpnProtocols, hs.clientHello.serverName); ok {
 					for _, length := range lengths {
 						plainText := make([]byte, length-16)
 						plainText[0] = byte(recordTypeApplicationData)
