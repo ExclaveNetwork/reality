@@ -13,7 +13,6 @@ import (
 	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/fips140"
 	"crypto/mldsa"
 	"crypto/rand"
 	"crypto/x509"
@@ -129,14 +128,9 @@ kohxS/xfFg/TEwRSSws+roJr4JFKpO2t3/be5OdqmQ==
 		{"ECDSA", ecdsaCertPEM, ecdsaKeyPEM},
 		{"RSA", rsaCertPEM, rsaKeyPEM},
 		{"RSA-untyped", rsaCertPEM, keyPEM}, // golang.org/issue/4477
-	}
-
-	if fips140.Version() != "v1.0.0" {
-		keyPairTests = append(keyPairTests,
-			test{"ML-DSA-44", testMLDSA44CertPEM, testingKey(testMLDSA44KeyPEM)},
-			test{"ML-DSA-65", testMLDSA65CertPEM, testingKey(testMLDSA65KeyPEM)},
-			test{"ML-DSA-87", testMLDSA87CertPEM, testingKey(testMLDSA87KeyPEM)},
-		)
+		{"ML-DSA-44", testMLDSA44CertPEM, testingKey(testMLDSA44KeyPEM)},
+		{"ML-DSA-65", testMLDSA65CertPEM, testingKey(testMLDSA65KeyPEM)},
+		{"ML-DSA-87", testMLDSA87CertPEM, testingKey(testMLDSA87KeyPEM)},
 	}
 
 	t.Parallel()
@@ -2191,20 +2185,6 @@ func TestSupportedSignatureAlgorithmsMLDSAGating(t *testing.T) {
 	}
 	mldsaSchemes := []SignatureScheme{MLDSA44, MLDSA65, MLDSA87}
 
-	if fips140.Version() == "v1.0.0" {
-		fullRange := supportedSignatureAlgorithms(VersionTLS10, VersionTLS13)
-		certExt := supportedSignatureAlgorithmsCert(VersionTLS10, VersionTLS13)
-		for _, s := range mldsaSchemes {
-			if slices.Contains(fullRange, s) {
-				t.Errorf("supportedSignatureAlgorithms contains %v under FIPS 140-3 v1.0.0", s)
-			}
-			if slices.Contains(certExt, s) {
-				t.Errorf("supportedSignatureAlgorithmsCert contains %v under FIPS 140-3 v1.0.0", s)
-			}
-		}
-		return
-	}
-
 	tls12Only := supportedSignatureAlgorithms(VersionTLS12, VersionTLS12)
 	tls12OnlyCert := supportedSignatureAlgorithmsCert(VersionTLS12, VersionTLS12)
 	for _, s := range mldsaSchemes {
@@ -2247,19 +2227,6 @@ func TestHandshakeMLDSA(t *testing.T) {
 			serverConfig.Certificates = []Certificate{tt.cert}
 			clientConfig := testConfigClient.Clone()
 			_, cs, err := testHandshake(t, clientConfig, serverConfig)
-			if fips140.Version() == "v1.0.0" {
-				if err == nil {
-					t.Errorf("ML-DSA handshake unexpectedly succeeded with FIPS 140-3 module v1.0.0")
-				}
-				// Loaded certificate has cert bytes but no usable private key.
-				if len(tt.cert.Certificate) == 0 {
-					t.Errorf("certificate bytes missing")
-				}
-				if tt.cert.PrivateKey != nil {
-					t.Errorf("PrivateKey = %T, want nil under v1.0.0", tt.cert.PrivateKey)
-				}
-				return
-			}
 			if err != nil {
 				t.Fatalf("handshake: %v", err)
 			}
@@ -2276,19 +2243,6 @@ func TestHandshakeMLDSA(t *testing.T) {
 			clientConfig := testConfigClient.Clone()
 			clientConfig.Certificates = []Certificate{tt.client}
 			ss, _, err := testHandshake(t, clientConfig, serverConfig)
-			if fips140.Version() == "v1.0.0" {
-				if err == nil {
-					t.Errorf("ML-DSA handshake unexpectedly succeeded with FIPS 140-3 module v1.0.0")
-				}
-				// Loaded certificate has cert bytes but no usable private key.
-				if len(tt.client.Certificate) == 0 {
-					t.Errorf("certificate bytes missing")
-				}
-				if tt.client.PrivateKey != nil {
-					t.Errorf("PrivateKey = %T, want nil under v1.0.0", tt.client.PrivateKey)
-				}
-				return
-			}
 			if err != nil {
 				t.Fatalf("handshake: %v", err)
 			}
@@ -2305,12 +2259,6 @@ func TestHandshakeMLDSA(t *testing.T) {
 			clientConfig := testConfigClient.Clone()
 			clientConfig.Certificates = []Certificate{tt.client}
 			ss, cs, err := testHandshake(t, clientConfig, serverConfig)
-			if fips140.Version() == "v1.0.0" {
-				if err == nil {
-					t.Errorf("ML-DSA handshake unexpectedly succeeded with FIPS 140-3 module v1.0.0")
-				}
-				return
-			}
 			if err != nil {
 				t.Fatalf("handshake: %v", err)
 			}

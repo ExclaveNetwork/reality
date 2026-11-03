@@ -14,7 +14,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
-	"crypto/fips140"
 	"crypto/mldsa"
 	"crypto/rand"
 	"crypto/rsa"
@@ -1860,10 +1859,6 @@ func supportedSignatureAlgorithms(minVers, maxVers uint16) []SignatureScheme {
 func isDisabledSignatureAlgorithm(version uint16, s SignatureScheme, isCert bool) bool {
 	switch s {
 	case MLDSA44, MLDSA65, MLDSA87:
-		// ML-DSA is not available in FIPS 140-3 module v1.0.0.
-		if fips140.Version() == "v1.0.0" {
-			return true
-		}
 		// ML-DSA codepoints are only defined for TLS 1.3.
 		if version < VersionTLS13 {
 			return true

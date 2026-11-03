@@ -8,7 +8,6 @@ package tls
 
 import (
 	"crypto"
-	"crypto/fips140"
 	"crypto/mldsa"
 	"strconv"
 	"testing"
@@ -158,15 +157,11 @@ func TestLegacyTypeAndHash(t *testing.T) {
 		t.Errorf("Ed25519: unexpected success")
 	}
 
-	// ML-DSA is not supported by TLS 1.0 and 1.1. Skip under FIPS 140-3 module
-	// v1.0.0 which doesn't support ML-DSA public keys.
-	if fips140.Version() != "v1.0.0" {
-		for _, key := range []*mldsa.PrivateKey{
-			testMLDSA44Key, testMLDSA65Key, testMLDSA87Key,
-		} {
-			if _, _, err := legacyTypeAndHashFromPublicKey(key.PublicKey()); err == nil {
-				t.Errorf("%s: unexpected success", key.PublicKey().Parameters())
-			}
+	for _, key := range []*mldsa.PrivateKey{
+		testMLDSA44Key, testMLDSA65Key, testMLDSA87Key,
+	} {
+		if _, _, err := legacyTypeAndHashFromPublicKey(key.PublicKey()); err == nil {
+			t.Errorf("%s: unexpected success", key.PublicKey().Parameters())
 		}
 	}
 }
