@@ -1887,7 +1887,7 @@ func isDisabledSignatureAlgorithm(version uint16, s SignatureScheme, isCert bool
 		if sigType == signaturePKCS1v15 || sigHash == crypto.SHA1 {
 			return true
 		}
-	} else {
+	} else if godebug.value("tlssha1") != "1" {
 		_, sigHash, _ := typeAndHashFromSignatureScheme(s)
 		if sigHash == crypto.SHA1 {
 			return true

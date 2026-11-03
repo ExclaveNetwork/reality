@@ -316,7 +316,9 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
 		return fail(err)
 	}
 
-	cert.Leaf = x509Cert
+	if godebug.value("x509keypairleaf") != "0" {
+		cert.Leaf = x509Cert
+	}
 
 	cert.PrivateKey, err = parsePrivateKey(keyDERBlock.Bytes)
 	if err != nil {

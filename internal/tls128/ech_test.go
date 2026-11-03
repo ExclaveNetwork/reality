@@ -297,7 +297,6 @@ func TestDecodeInnerClientHelloOuterExtensions(t *testing.T) {
 	}
 }
 
-
 func TestECHServerCipherSuite(t *testing.T) {
 	key, err := ecdh.X25519().GenerateKey(rand.Reader)
 	if err != nil {

@@ -207,3 +207,27 @@ func NewRealityListener(listener net.Listener, config *Config) net.Listener {
 func RealityListen(network, laddr string, config *Config) (net.Listener, error) {
 	return tls.RealityListen(network, laddr, config)
 }
+
+var (
+	tlssha1         = ""
+	tlsmlkem        = ""
+	tlssecpmlkem    = ""
+	tlsmaxrsasize   = ""
+	tls10server     = ""
+	tlsunsafeekm    = ""
+	tlsrsakex       = ""
+	tls3des         = ""
+	x509keypairleaf = ""
+)
+
+func init() {
+	tls.TLSSHA1 = tlssha1
+	tls.TLSMLKEM = tlsmlkem
+	tls.TLSSecpMLKEM = tlssecpmlkem
+	tls.TLSMaxRSASize = tlsmaxrsasize
+	tls.TLS10Server = tls10server
+	tls.TLSUnsafeEKM = tlsunsafeekm
+	tls.TLSRSAKex = tlsrsakex
+	tls.TLS3DES = tls3des
+	tls.X509KeyPairLeaf = x509keypairleaf
+}

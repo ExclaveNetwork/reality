@@ -23,6 +23,7 @@ import (
 	"io"
 	"net"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -1072,6 +1073,11 @@ func (hs *clientHandshakeState) sendFinished(out []byte) error {
 const defaultMaxRSAKeySize = 8192
 
 func checkKeySize(n int) (max int, ok bool) {
+	if v := godebug.value("tlsmaxrsasize"); v != "" {
+		if max, err := strconv.Atoi(v); err == nil {
+			return max, n <= max
+		}
+	}
 	return defaultMaxRSAKeySize, n <= defaultMaxRSAKeySize
 }
 
