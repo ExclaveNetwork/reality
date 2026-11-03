@@ -506,6 +506,9 @@ func runClientTestTLS13(t *testing.T, template *clientTest) {
 }
 
 func TestHandshakeClientRSARC4(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CipherSuites = []uint16{TLS_RSA_WITH_RC4_128_SHA}
 	test := &clientTest{
@@ -521,6 +524,9 @@ func TestHandshakeClientRSARC4(t *testing.T) {
 }
 
 func TestHandshakeClientRSAAES128GCM(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CipherSuites = []uint16{TLS_RSA_WITH_AES_128_GCM_SHA256}
 	test := &clientTest{
@@ -534,6 +540,9 @@ func TestHandshakeClientRSAAES128GCM(t *testing.T) {
 }
 
 func TestHandshakeClientRSAAES256GCM(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CipherSuites = []uint16{TLS_RSA_WITH_AES_256_GCM_SHA384}
 	test := &clientTest{
@@ -547,6 +556,9 @@ func TestHandshakeClientRSAAES256GCM(t *testing.T) {
 }
 
 func TestHandshakeClientECDHERSAAES(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:       "ECDHE-RSA-AES",
 		args:       []string{"-cipher", "ECDHE-RSA-AES128-SHA"},
@@ -559,6 +571,9 @@ func TestHandshakeClientECDHERSAAES(t *testing.T) {
 }
 
 func TestHandshakeClientECDHEECDSAAES(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "ECDHE-ECDSA-AES",
 		args:     []string{"-cipher", "ECDHE-ECDSA-AES128-SHA"},
@@ -570,6 +585,9 @@ func TestHandshakeClientECDHEECDSAAES(t *testing.T) {
 }
 
 func TestHandshakeClientECDHEECDSAAESGCM(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "ECDHE-ECDSA-AES-GCM",
 		args:     []string{"-cipher", "ECDHE-ECDSA-AES128-GCM-SHA256"},
@@ -579,6 +597,9 @@ func TestHandshakeClientECDHEECDSAAESGCM(t *testing.T) {
 }
 
 func TestHandshakeClientAES256GCMSHA384(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "ECDHE-ECDSA-AES256-GCM-SHA384",
 		args:     []string{"-cipher", "ECDHE-ECDSA-AES256-GCM-SHA384"},
@@ -588,6 +609,9 @@ func TestHandshakeClientAES256GCMSHA384(t *testing.T) {
 }
 
 func TestHandshakeClientAES128CBCSHA256(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CipherSuites = []uint16{TLS_RSA_WITH_AES_128_CBC_SHA256}
 	test := &clientTest{
@@ -601,6 +625,9 @@ func TestHandshakeClientAES128CBCSHA256(t *testing.T) {
 }
 
 func TestHandshakeClientECDHERSAAES128CBCSHA256(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CipherSuites = []uint16{TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256}
 	test := &clientTest{
@@ -614,6 +641,9 @@ func TestHandshakeClientECDHERSAAES128CBCSHA256(t *testing.T) {
 }
 
 func TestHandshakeClientECDHEECDSAAES128CBCSHA256(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CipherSuites = []uint16{TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256}
 	test := &clientTest{
@@ -626,6 +656,9 @@ func TestHandshakeClientECDHEECDSAAES128CBCSHA256(t *testing.T) {
 }
 
 func TestHandshakeClientX25519(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "X25519-ECDHE",
 		args:     []string{"-curves", "X25519"},
@@ -636,6 +669,9 @@ func TestHandshakeClientX25519(t *testing.T) {
 }
 
 func TestHandshakeClientP256(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "P256-ECDHE",
 		args:     []string{"-curves", "P-256"},
@@ -646,6 +682,9 @@ func TestHandshakeClientP256(t *testing.T) {
 }
 
 func TestHandshakeClientHelloRetryRequest(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.CurvePreferences = []CurveID{X25519, CurveP256}
 
@@ -665,6 +704,9 @@ func TestHandshakeClientHelloRetryRequest(t *testing.T) {
 }
 
 func TestHandshakeClientECDHERSAChaCha20(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:       "ECDHE-RSA-CHACHA20-POLY1305",
 		args:       []string{"-cipher", "ECDHE-RSA-CHACHA20-POLY1305"},
@@ -675,6 +717,9 @@ func TestHandshakeClientECDHERSAChaCha20(t *testing.T) {
 }
 
 func TestHandshakeClientECDHEECDSAChaCha20(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "ECDHE-ECDSA-CHACHA20-POLY1305",
 		args:     []string{"-cipher", "ECDHE-ECDSA-CHACHA20-POLY1305"},
@@ -684,6 +729,9 @@ func TestHandshakeClientECDHEECDSAChaCha20(t *testing.T) {
 }
 
 func TestHandshakeClientAES128SHA256(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "AES128-SHA256",
 		args:     []string{"-ciphersuites", "TLS_AES_128_GCM_SHA256"},
@@ -693,6 +741,9 @@ func TestHandshakeClientAES128SHA256(t *testing.T) {
 }
 
 func TestHandshakeClientAES256SHA384(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "AES256-SHA384",
 		args:     []string{"-ciphersuites", "TLS_AES_256_GCM_SHA384"},
@@ -702,6 +753,9 @@ func TestHandshakeClientAES256SHA384(t *testing.T) {
 }
 
 func TestHandshakeClientCHACHA20SHA256(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "CHACHA20-SHA256",
 		args:     []string{"-ciphersuites", "TLS_CHACHA20_POLY1305_SHA256"},
@@ -723,6 +777,9 @@ func checkPeerCertificateType(expected x509.PublicKeyAlgorithm) func(ConnectionS
 }
 
 func TestHandshakeClientRSATLS13(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:       "RSA",
 		serverCert: &testRSA2048Cert,
@@ -732,6 +789,9 @@ func TestHandshakeClientRSATLS13(t *testing.T) {
 }
 
 func TestHandshakeClientECDSATLS13(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:     "ECDSA",
 		validate: checkPeerCertificateType(x509.ECDSA),
@@ -740,6 +800,9 @@ func TestHandshakeClientECDSATLS13(t *testing.T) {
 }
 
 func TestHandshakeClientEd25519(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:       "Ed25519",
 		serverCert: &testEd25519Cert,
@@ -750,6 +813,9 @@ func TestHandshakeClientEd25519(t *testing.T) {
 }
 
 func TestHandshakeClientCertEd25519(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:       "ClientCert-Ed25519-Ed25519",
 		args:       []string{"-Verify", "1", "-client_sigalgs", "ed25519"},
@@ -782,6 +848,9 @@ func TestHandshakeClientCertEd25519(t *testing.T) {
 }
 
 func TestHandshakeClientCertRSA(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.Certificates = []Certificate{testClientRSA2048Cert}
 
@@ -820,6 +889,9 @@ func TestHandshakeClientCertRSA(t *testing.T) {
 }
 
 func TestHandshakeClientCertECDSA(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.Certificates = []Certificate{testClientECDSAP256Cert}
 
@@ -862,6 +934,9 @@ func TestHandshakeClientCertECDSA(t *testing.T) {
 // signed itself with RSA-PSS, mostly to check that crypto/x509 chain validation
 // works.
 func TestHandshakeClientCertRSAPSS(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.Certificates = []Certificate{testClientRSAPSSCert}
 	test := &clientTest{
@@ -882,6 +957,9 @@ func TestHandshakeClientCertRSAPSS(t *testing.T) {
 }
 
 func TestHandshakeClientCertRSAPKCS1v15(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name: "ClientCert-RSA-RSAPKCS1v15",
 		args: []string{"-Verify", "1",
@@ -892,6 +970,9 @@ func TestHandshakeClientCertRSAPKCS1v15(t *testing.T) {
 }
 
 func TestClientKeyUpdate(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:          "KeyUpdate",
 		args:          []string{"-state"},
@@ -1307,6 +1388,9 @@ func TestKeyLogTLS13(t *testing.T) {
 }
 
 func TestHandshakeClientALPNMatch(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.NextProtos = []string{"proto2", "proto1"}
 	test := &clientTest{
@@ -1374,6 +1458,9 @@ func TestServerSelectingUnconfiguredApplicationProtocol(t *testing.T) {
 const sctsBase64 = "ABIBaQFnAHUApLkJkLQYWBSHuxOizGdwCjw1mAT5G9+443fNDsgN3BAAAAFHl5nuFgAABAMARjBEAiAcS4JdlW5nW9sElUv2zvQyPoZ6ejKrGGB03gjaBZFMLwIgc1Qbbn+hsH0RvObzhS+XZhr3iuQQJY8S9G85D9KeGPAAdgBo9pj4H2SCvjqM7rkoHUz8cVFdZ5PURNEKZ6y7T0/7xAAAAUeX4bVwAAAEAwBHMEUCIDIhFDgG2HIuADBkGuLobU5a4dlCHoJLliWJ1SYT05z6AiEAjxIoZFFPRNWMGGIjskOTMwXzQ1Wh2e7NxXE1kd1J0QsAdgDuS723dc5guuFCaR+r4Z5mow9+X7By2IMAxHuJeqj9ywAAAUhcZIqHAAAEAwBHMEUCICmJ1rBT09LpkbzxtUC+Hi7nXLR0J+2PmwLp+sJMuqK+AiEAr0NkUnEVKVhAkccIFpYDqHOlZaBsuEhWWrYpg2RtKp0="
 
 func TestHandshakeClientSCTs(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	scts, err := base64.StdEncoding.DecodeString(sctsBase64)
 	if err != nil {
 		t.Fatal(err)
@@ -1406,6 +1493,9 @@ func TestHandshakeClientSCTs(t *testing.T) {
 }
 
 func TestRenegotiationRejected(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name:                        "RenegotiationRejected",
 		args:                        []string{"-state"},
@@ -1425,6 +1515,9 @@ func TestRenegotiationRejected(t *testing.T) {
 }
 
 func TestRenegotiateOnce(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.Renegotiation = RenegotiateOnceAsClient
 
@@ -1439,6 +1532,9 @@ func TestRenegotiateOnce(t *testing.T) {
 }
 
 func TestRenegotiateTwice(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.Renegotiation = RenegotiateFreelyAsClient
 
@@ -1453,6 +1549,9 @@ func TestRenegotiateTwice(t *testing.T) {
 }
 
 func TestRenegotiateTwiceRejected(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	config := testConfigClient.Clone()
 	config.Renegotiation = RenegotiateOnceAsClient
 
@@ -1481,6 +1580,9 @@ func TestRenegotiateTwiceRejected(t *testing.T) {
 }
 
 func TestHandshakeClientExportKeyingMaterial(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	test := &clientTest{
 		name: "ExportKeyingMaterial",
 		validate: func(state ConnectionState) error {

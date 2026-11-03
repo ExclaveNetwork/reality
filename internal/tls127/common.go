@@ -1852,12 +1852,21 @@ func supportedSignatureAlgorithms(minVers, maxVers uint16) []SignatureScheme {
 	})
 }
 
+func shouldDisableMLDSASignatureAlgorithmCert() bool {
+	switch runtime.Version() {
+	case "go1.27rc1", "go1.27rc2", "go1.27rc3", "go1.27.0", "go1.27.1", "go1.27.2", "go1.27.3":
+		return false
+	default:
+		return true
+	}
+}
+
 func isDisabledSignatureAlgorithm(version uint16, s SignatureScheme, isCert bool) bool {
 	switch s {
 	case MLDSA44, MLDSA65, MLDSA87:
 		// Omit ML-DSA from signature_algorithms_cert in Go 1.27 to work
 		// around non-compliant middleboxes. See https://go.dev/issue/82536.
-		if isCert {
+		if isCert && shouldDisableMLDSASignatureAlgorithmCert() {
 			return true
 		}
 		// ML-DSA codepoints are only defined for TLS 1.3.

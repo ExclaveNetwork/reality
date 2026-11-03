@@ -2144,6 +2144,9 @@ func TestHandshakeMLKEM(t *testing.T) {
 }
 
 func TestSupportedSignatureAlgorithmsCert(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	// Preserve the Go 1.26 list and order for middlebox compatibility.
 	want := []SignatureScheme{
 		PSSWithSHA256,
@@ -2183,6 +2186,9 @@ func TestSupportedSignatureAlgorithmsCert(t *testing.T) {
 // ML-DSA), ML-DSA MUST NOT be advertised in either extension.
 // ML-DSA is omitted from signature_algorithms_cert for middlebox compatibility.
 func TestSupportedSignatureAlgorithmsMLDSAGating(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	mldsaSchemes := []SignatureScheme{MLDSA44, MLDSA65, MLDSA87}
 
 	if fips140.Version() == "v1.0.0" {

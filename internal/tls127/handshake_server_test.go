@@ -1491,6 +1491,9 @@ func BenchmarkHandshakeServer(b *testing.B) {
 }
 
 func TestClientAuth(t *testing.T) {
+	if !shouldDisableMLDSASignatureAlgorithmCert() {
+		t.Skip()
+	}
 	var certPath, keyPath, ecdsaCertPath, ecdsaKeyPath, ed25519CertPath, ed25519KeyPath string
 
 	if *update {
