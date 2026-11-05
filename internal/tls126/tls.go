@@ -38,6 +38,8 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
 
 // Server returns a new TLS server side connection
@@ -316,7 +318,7 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
 		return fail(err)
 	}
 
-	if godebug.value("x509keypairleaf") != "0" {
+	if godebug.Value("x509keypairleaf") != "0" {
 		cert.Leaf = x509Cert
 	}
 

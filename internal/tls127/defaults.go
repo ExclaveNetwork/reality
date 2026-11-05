@@ -7,68 +7,11 @@
 package tls
 
 import (
-	"os"
 	"slices"
-	"sync"
 	_ "unsafe" // for linkname
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
-
-var (
-	TLSSHA1       = ""
-	TLSMLKEM      = ""
-	TLSSecpMLKEM  = ""
-	TLSMaxRSASize = ""
-)
-
-var godebug = &godebugStruct{
-	kv: make(map[string]string),
-}
-
-type godebugStruct struct {
-	once sync.Once
-	kv   map[string]string
-}
-
-func (d *godebugStruct) value(key string) string {
-	d.once.Do(func() {
-		s := os.Getenv("GODEBUG")
-		end := len(s)
-		eq := -1
-		for i := end - 1; i >= -1; i-- {
-			if i == -1 || s[i] == ',' {
-				if eq >= 0 {
-					k, v := s[i+1:eq], s[eq+1:end]
-					if _, ok := d.kv[k]; !ok {
-						for j := 0; j < len(v); j++ {
-							if v[j] == '#' {
-								v = v[:j]
-								break
-							}
-						}
-						d.kv[k] = v
-					}
-				}
-				eq = -1
-				end = i
-			} else if s[i] == '=' {
-				eq = i
-			}
-		}
-		if _, ok := d.kv["tlssha1"]; !ok {
-			d.kv["tlssha1"] = TLSSHA1
-		}
-		if _, ok := d.kv["tlsmlkem"]; !ok {
-			d.kv["tlsmlkem"] = TLSMLKEM
-		}
-		if _, ok := d.kv["tlssecpmlkem"]; !ok {
-			d.kv["tlssecpmlkem"] = TLSSecpMLKEM
-		}
-		if _, ok := d.kv["tlsmaxrsasize"]; !ok {
-			d.kv["tlsmaxrsasize"] = TLSMaxRSASize
-		}
-	})
-	return d.kv[key]
-}
 
 // Defaults are collected in this file to allow distributions to more easily patch
 // them to apply local policies.
@@ -79,9 +22,9 @@ func defaultCurveEnabled(c CurveID) bool {
 	case X25519, CurveP256, CurveP384, CurveP521:
 		return true
 	case X25519MLKEM768:
-		return godebug.value("tlsmlkem") != "0"
+		return godebug.Value("tlsmlkem") != "0"
 	case SecP256r1MLKEM768, SecP384r1MLKEM1024:
-		return godebug.value("tlsmlkem") != "0" && godebug.value("tlssecpmlkem") != "0"
+		return godebug.Value("tlsmlkem") != "0" && godebug.Value("tlssecpmlkem") != "0"
 	default:
 		return false
 	}

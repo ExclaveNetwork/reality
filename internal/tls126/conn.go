@@ -22,6 +22,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
 
 // A Conn represents a secured connection.
@@ -1693,7 +1695,7 @@ func (c *Conn) connectionStateLocked() ConnectionState {
 		state.ekm = noEKMBecauseRenegotiation
 	} else if c.vers != VersionTLS13 && !c.extMasterSecret {
 		state.ekm = func(label string, context []byte, length int) ([]byte, error) {
-			if godebug.value("tlsunsafeekm") == "1" {
+			if godebug.Value("tlsunsafeekm") == "1" {
 				return c.ekm(label, context, length)
 			}
 			return noEKMBecauseNoEMS(label, context, length)

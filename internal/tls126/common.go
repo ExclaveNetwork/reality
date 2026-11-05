@@ -28,6 +28,8 @@ import (
 	"sync"
 	"time"
 	_ "unsafe" // for linkname
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
 
 const (
@@ -1292,7 +1294,7 @@ func (c *Config) supportedVersions(isClient bool) []uint16 {
 	versions := make([]uint16, 0, len(supportedVersions))
 	for _, v := range supportedVersions {
 		if (c == nil || c.MinVersion == 0) && v < VersionTLS12 {
-			if isClient || godebug.value("tls10server") != "1" {
+			if isClient || godebug.Value("tls10server") != "1" {
 				continue
 			}
 		}
@@ -1837,7 +1839,7 @@ func isDisabledSignatureAlgorithm(version uint16, s SignatureScheme, isCert bool
 		if sigType == signaturePKCS1v15 || sigHash == crypto.SHA1 {
 			return true
 		}
-	} else if godebug.value("tlssha1") != "1" {
+	} else if godebug.Value("tlssha1") != "1" {
 		_, sigHash, _ := typeAndHashFromSignatureScheme(s)
 		if sigHash == crypto.SHA1 {
 			return true

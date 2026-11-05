@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exclavenetwork/reality/internal/godebug"
 	"github.com/exclavenetwork/reality/internal/tls127/tls13"
 )
 
@@ -1073,7 +1074,7 @@ func (hs *clientHandshakeState) sendFinished(out []byte) error {
 const defaultMaxRSAKeySize = 8192
 
 func checkKeySize(n int) (max int, ok bool) {
-	if v := godebug.value("tlsmaxrsasize"); v != "" {
+	if v := godebug.Value("tlsmaxrsasize"); v != "" {
 		if max, err := strconv.Atoi(v); err == nil {
 			return max, n <= max
 		}

@@ -29,6 +29,8 @@ import (
 	"sync"
 	"time"
 	_ "unsafe" // for linkname
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
 
 const (
@@ -1882,7 +1884,7 @@ func isDisabledSignatureAlgorithm(version uint16, s SignatureScheme, isCert bool
 		if sigType == signaturePKCS1v15 || sigHash == crypto.SHA1 {
 			return true
 		}
-	} else if godebug.value("tlssha1") != "1" {
+	} else if godebug.Value("tlssha1") != "1" {
 		_, sigHash, _ := typeAndHashFromSignatureScheme(s)
 		if sigHash == crypto.SHA1 {
 			return true
