@@ -109,21 +109,14 @@ func main() {
 				if bytes.Equal(h.Sum(nil), state.PeerCertificates[0].Signature) {
 					if mldsa65PublicKey != nil {
 						if len(state.PeerCertificates[0].Extensions) > 0 {
-							clientHello, err := state.RawClientHello()
-							if err != nil {
-								return err
-							}
-							serverHello, err := state.RawServerHello()
-							if err != nil {
-								return err
-							}
+							clientHello, _ := state.RawClientHello()
+							serverHello, _ := state.RawServerHello()
 							h.Write(clientHello)
 							h.Write(serverHello)
-							if err := mldsa.Verify(mldsa65PublicKey, h.Sum(nil), state.PeerCertificates[0].Extensions[0].Value, nil); err != nil {
-								return err
+							if err := mldsa.Verify(mldsa65PublicKey, h.Sum(nil), state.PeerCertificates[0].Extensions[0].Value, nil); err == nil {
+								verified = true
+								return nil
 							}
-							verified = true
-							return nil
 						}
 					} else {
 						verified = true
