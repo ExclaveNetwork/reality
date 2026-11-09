@@ -46,7 +46,6 @@ import (
 )
 
 func main() {
-	nextProtos := []string{"h2", "http/1.1"}
 	serverAddress, serverPort := "127.0.0.1", "8443"
 	privateKey, _ := ecdh.X25519().GenerateKey(nil)
 	publicKey := privateKey.PublicKey()
@@ -59,7 +58,7 @@ func main() {
 	go func() {
 		serverConfig := &reality.Config{
 			SessionTicketsDisabled: true,
-			NextProtos:             nextProtos,
+			NextProtos:             nil,
 			RealityServerConfig: reality.RealityServerConfig{
 				PrivateKey:  privateKey.Bytes(),
 				MLDSA65Seed: mldsa65PrivateKey.Bytes(),
@@ -90,7 +89,7 @@ func main() {
 	verified := false
 	clientConfig := &reality.Config{
 		ServerName:             targetServerName,
-		NextProtos:             nextProtos,
+		NextProtos:             []string{"h2", "http/1.1"},
 		SessionTicketsDisabled: true,
 		InsecureSkipVerify:     true,
 		RealityClientConfig: reality.RealityClientConfig{
