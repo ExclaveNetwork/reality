@@ -12,7 +12,6 @@ import (
 	"crypto"
 	"crypto/ecdh"
 	"crypto/elliptic"
-	//internalrand "crypto/internal/rand"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -1407,10 +1406,6 @@ func (zeroSource) Read(b []byte) (n int, err error) {
 
 func benchmarkHandshakeServer(b *testing.B, version uint16, cipherSuite uint16, curve CurveID, cert []byte, key crypto.PrivateKey) {
 	config := testConfigServer()
-
-	// cryptotest.SetGlobalRandom does not support *testing.B
-	//internalrand.SetTestingReader(zeroSource{})
-	//defer internalrand.SetTestingReader(nil)
 
 	config.CipherSuites = []uint16{cipherSuite}
 	config.CurvePreferences = []CurveID{curve}
