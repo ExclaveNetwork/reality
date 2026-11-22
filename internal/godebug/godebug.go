@@ -40,6 +40,8 @@ var (
 	defaultGoDebug map[string]string
 )
 
+var TestingIgnoreBuildInfo bool
+
 func parse(str string) map[string]string {
 	end := len(str)
 	eq := -1
@@ -74,7 +76,7 @@ func Value(key string) string {
 		}
 		if len(godebugDefault) > 0 {
 			defaultGoDebug = parse(godebugDefault)
-		} else if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		} else if buildInfo, ok := debug.ReadBuildInfo(); ok && !TestingIgnoreBuildInfo {
 			for _, setting := range buildInfo.Settings {
 				if setting.Key == "DefaultGODEBUG" {
 					defaultGoDebug = parse(setting.Value)

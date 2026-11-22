@@ -34,7 +34,13 @@ import (
 	"time"
 
 	"golang.org/x/crypto/cryptobyte"
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
+
+func init() {
+	godebug.TestingIgnoreBuildInfo = true
+}
 
 var testTime = func() time.Time { return time.Unix(1476984729, 0) }
 

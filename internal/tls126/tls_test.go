@@ -33,7 +33,13 @@ import (
 	"time"
 
 	"golang.org/x/crypto/cryptobyte"
+
+	"github.com/exclavenetwork/reality/internal/godebug"
 )
+
+func init() {
+	godebug.TestingIgnoreBuildInfo = true
+}
 
 var rsaCertPEM = `-----BEGIN CERTIFICATE-----
 MIIB0zCCAX2gAwIBAgIJAI/M7BYjwB+uMA0GCSqGSIb3DQEBBQUAMEUxCzAJBgNV
