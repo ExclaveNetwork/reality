@@ -394,15 +394,7 @@ func TestUPKIRevocationDefaultDiscovery(t *testing.T) {
 	}
 
 	chain := newTLSUPKITestChain(t, tlsUPKITestLeafSerial, tlsUPKISCTExtensionValue(t, tlsUPKITestLogID, tlsUPKITestSCTTime))
-	userCache := t.TempDir()
-	t.Setenv("XDG_CACHE_HOME", userCache)
-	cacheDir := filepath.Join(userCache, "upki", "revocation")
-	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	writeTLSUPKITestCacheFilesIn(t, cacheDir, tlsUPKIIndex(tlsUPKITestLogID), map[string][]byte{
-		tlsUPKITestFilterName: tlsUPKIFilter(tlsUPKITestLogID, []tlsUPKITestBlock{{issuer: chain.issuerHash, inverted: true}}),
-	})
+	setTLSUPKIUserCache(t, chain)
 
 	clientConfig := chain.clientConfig("")
 	if err := clientConfig.checkUPKIRevocation(chain.verifiedChains()); !errors.Is(err, ErrUPKIRevoked) {
@@ -439,6 +431,23 @@ func TestUPKIRevocationDefaultDiscovery(t *testing.T) {
 	if err := clientConfig.checkUPKIRevocation(chain.verifiedChains()); !errors.Is(err, upki.ErrNoData) {
 		t.Fatalf("required cache = %v, want ErrNoData", err)
 	}
+}
+
+// setTLSUPKIUserCache points the user cache directory at a temporary cache
+// in which chain's certificate is revoked. It sets the environment, so the
+// calling test must not be parallel.
+func setTLSUPKIUserCache(t *testing.T, chain tlsUPKITestChain) {
+	t.Helper()
+
+	userCache := t.TempDir()
+	t.Setenv("XDG_CACHE_HOME", userCache)
+	cacheDir := filepath.Join(userCache, "upki", "revocation")
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTLSUPKITestCacheFilesIn(t, cacheDir, tlsUPKIIndex(tlsUPKITestLogID), map[string][]byte{
+		tlsUPKITestFilterName: tlsUPKIFilter(tlsUPKITestLogID, []tlsUPKITestBlock{{issuer: chain.issuerHash, inverted: true}}),
+	})
 }
 
 // TestUPKIRevocationHandshake verifies the ordering and error wrapping of

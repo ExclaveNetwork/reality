@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/exclavenetwork/reality/internal/godebug"
 	"github.com/exclavenetwork/reality/internal/tls128/upki"
 )
 
@@ -102,6 +103,11 @@ func (c *Config) checkUPKIRevocation(chains [][]*x509.Certificate) error {
 	}
 
 	if cfg.Disabled {
+		return nil
+	}
+	// GODEBUG=tlsupki=0 turns off the default-on checking. A Config that
+	// names a cache directory explicitly keeps checking it.
+	if cfg.Directory == "" && godebug.Value("tlsupki") == "0" {
 		return nil
 	}
 
