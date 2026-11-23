@@ -2155,28 +2155,28 @@ func TestHandshakeMLKEM(t *testing.T) {
 // version-level gating of ML-DSA. Outside the FIPS 140-3 v1.0.0 module:
 // ML-DSA MUST NOT appear in the TLS 1.2 advertised list, MUST appear in
 // the TLS 1.3 advertised list. Under FIPS 140-3 v1.0.0 (which doesn't include
-// ML-DSA), ML-DSA MUST NOT be advertised in either extension.
+// ML-DSA), ML-DSA MUST NOT be advertised for handshake messages or certificates.
 func TestSupportedSignatureAlgorithmsMLDSAGating(t *testing.T) {
 	mldsaSchemes := []SignatureScheme{MLDSA44, MLDSA65, MLDSA87}
 
 	tls12Only := supportedSignatureAlgorithms(VersionTLS12, VersionTLS12)
-	tls12OnlyCert := supportedSignatureAlgorithmsCert(VersionTLS12, VersionTLS12)
+	tls12OnlyCert := enabledSignatureAlgorithms(VersionTLS12, VersionTLS12, sigAlgCertificate)
 	for _, s := range mldsaSchemes {
 		if slices.Contains(tls12Only, s) {
 			t.Errorf("supportedSignatureAlgorithms(TLS12, TLS12) contains %v; ML-DSA must not be advertised in TLS 1.2", s)
 		}
 		if slices.Contains(tls12OnlyCert, s) {
-			t.Errorf("supportedSignatureAlgorithmsCert(TLS12, TLS12) contains %v; ML-DSA must not be advertised in TLS 1.2", s)
+			t.Errorf("TLS 1.2 certificate signature algorithms contain %v; ML-DSA must not be advertised in TLS 1.2", s)
 		}
 	}
 	tls13Only := supportedSignatureAlgorithms(VersionTLS13, VersionTLS13)
-	tls13OnlyCert := supportedSignatureAlgorithmsCert(VersionTLS13, VersionTLS13)
+	tls13OnlyCert := enabledSignatureAlgorithms(VersionTLS13, VersionTLS13, sigAlgCertificate)
 	for _, s := range mldsaSchemes {
 		if !slices.Contains(tls13Only, s) {
 			t.Errorf("supportedSignatureAlgorithms(TLS13, TLS13) is missing %v", s)
 		}
 		if !slices.Contains(tls13OnlyCert, s) {
-			t.Errorf("supportedSignatureAlgorithmsCert(TLS13, TLS13) is missing %v", s)
+			t.Errorf("TLS 1.3 certificate signature algorithms are missing %v", s)
 		}
 	}
 }
