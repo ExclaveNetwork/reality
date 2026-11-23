@@ -14,6 +14,7 @@ import (
 	"crypto/hmac"
 	"crypto/hpke"
 	"crypto/rsa"
+	"crypto/subtle"
 	"crypto/x509"
 	"encoding/binary"
 	"errors"
@@ -385,8 +386,11 @@ func (hs *serverHandshakeStateTLS13) checkForResumption() error {
 			}
 		}
 
-		hs.earlySecret = tls13.NewEarlySecret(hs.suite.hash.New, sessionState.secret)
-		binderKey := hs.earlySecret.ResumptionBinderKey()
+		var binderKey []byte
+		subtle.WithDataIndependentTiming(func() {
+			hs.earlySecret = tls13.NewEarlySecret(hs.suite.hash.New, sessionState.secret)
+			binderKey = hs.earlySecret.ResumptionBinderKey()
+		})
 		// Clone the transcript in case a HelloRetryRequest was recorded.
 		transcript := cloneHash(hs.transcript, hs.suite.hash)
 		if transcript == nil {
@@ -414,7 +418,8 @@ func (hs *serverHandshakeStateTLS13) checkForResumption() error {
 			if err := transcriptMsg(hs.clientHello, transcript); err != nil {
 				return err
 			}
-			earlyTrafficSecret := hs.earlySecret.ClientEarlyTrafficSecret(transcript)
+			var earlyTrafficSecret []byte
+			subtle.WithDataIndependentTiming(func() { earlyTrafficSecret = hs.earlySecret.ClientEarlyTrafficSecret(transcript) })
 			if err := c.quicSetReadSecret(QUICEncryptionLevelEarly, hs.suite.id, earlyTrafficSecret); err != nil {
 				return err
 			}
@@ -565,7 +570,10 @@ func (hs *serverHandshakeStateTLS13) doHelloRetryRequest(selectedGroup CurveID) 
 			c.sendAlert(alertInternalError)
 			return nil, err
 		}
-		acceptConfirmation := tls13.ExpandLabel(h, prf, "hrr ech accept confirmation", confTranscript.Sum(nil), 8)
+		var acceptConfirmation []byte
+		subtle.WithDataIndependentTiming(func() {
+			acceptConfirmation = tls13.ExpandLabel(h, prf, "hrr ech accept confirmation", confTranscript.Sum(nil), 8)
+		})
 		helloRetryRequest.encryptedClientHello = acceptConfirmation
 	}
 
@@ -729,8 +737,10 @@ func (hs *serverHandshakeStateTLS13) sendServerParameters(isReality bool) error 
 			c.sendAlert(alertInternalError)
 			return err
 		}
-		acceptConfirmation := tls13.ExpandLabel(h, prk, "ech accept confirmation", echTranscript.Sum(nil), 8)
-		copy(hs.hello.random[32-8:], acceptConfirmation)
+		subtle.WithDataIndependentTiming(func() {
+			acceptConfirmation := tls13.ExpandLabel(h, prk, "ech accept confirmation", echTranscript.Sum(nil), 8)
+			copy(hs.hello.random[32-8:], acceptConfirmation)
+		})
 	}
 
 	if err := transcriptMsg(hs.clientHello, hs.transcript); err != nil {
@@ -753,14 +763,19 @@ func (hs *serverHandshakeStateTLS13) sendServerParameters(isReality bool) error 
 	}
 
 	earlySecret := hs.earlySecret
-	if earlySecret == nil {
-		earlySecret = tls13.NewEarlySecret(hs.suite.hash.New, nil)
-	}
-	hs.handshakeSecret = earlySecret.HandshakeSecret(hs.sharedKey)
+	var serverSecret []byte
+	var clientSecret []byte
+	subtle.WithDataIndependentTiming(func() {
+		if earlySecret == nil {
+			earlySecret = tls13.NewEarlySecret(hs.suite.hash.New, nil)
+		}
+		hs.handshakeSecret = earlySecret.HandshakeSecret(hs.sharedKey)
+		serverSecret = hs.handshakeSecret.ServerHandshakeTrafficSecret(hs.transcript)
 
-	serverSecret := hs.handshakeSecret.ServerHandshakeTrafficSecret(hs.transcript)
-	c.setWriteTrafficSecret(hs.suite, QUICEncryptionLevelHandshake, serverSecret)
-	clientSecret := hs.handshakeSecret.ClientHandshakeTrafficSecret(hs.transcript)
+		c.setWriteTrafficSecret(hs.suite, QUICEncryptionLevelHandshake, serverSecret)
+		clientSecret = hs.handshakeSecret.ClientHandshakeTrafficSecret(hs.transcript)
+	})
+
 	if err := c.setReadTrafficSecret(hs.suite, QUICEncryptionLevelHandshake, clientSecret, false); err != nil {
 		return err
 	}
@@ -911,10 +926,13 @@ func (hs *serverHandshakeStateTLS13) sendServerFinished() error {
 
 	// Derive secrets that take context through the server Finished.
 
-	hs.masterSecret = hs.handshakeSecret.MasterSecret()
+	var serverSecret []byte
+	subtle.WithDataIndependentTiming(func() {
+		hs.masterSecret = hs.handshakeSecret.MasterSecret()
 
-	hs.trafficSecret = hs.masterSecret.ClientApplicationTrafficSecret(hs.transcript)
-	serverSecret := hs.masterSecret.ServerApplicationTrafficSecret(hs.transcript)
+		hs.trafficSecret = hs.masterSecret.ClientApplicationTrafficSecret(hs.transcript)
+		serverSecret = hs.masterSecret.ServerApplicationTrafficSecret(hs.transcript)
+	})
 	c.setWriteTrafficSecret(hs.suite, QUICEncryptionLevelApplication, serverSecret)
 
 	if c.quic != nil {
@@ -971,7 +989,7 @@ func (hs *serverHandshakeStateTLS13) sendSessionTickets() error {
 		return err
 	}
 
-	c.resumptionSecret = hs.masterSecret.ResumptionMasterSecret(hs.transcript)
+	subtle.WithDataIndependentTiming(func() { c.resumptionSecret = hs.masterSecret.ResumptionMasterSecret(hs.transcript) })
 
 	if !hs.shouldSendSessionTickets() {
 		return nil
@@ -986,8 +1004,11 @@ func (c *Conn) sendSessionTicket(earlyData bool, extra [][]byte) error {
 	}
 	// ticket_nonce, which must be unique per connection, is always left at
 	// zero because we only ever send one ticket per connection.
-	psk := tls13.ExpandLabel(suite.hash.New, c.resumptionSecret, "resumption",
-		nil, suite.hash.Size())
+	var psk []byte
+	subtle.WithDataIndependentTiming(func() {
+		psk = tls13.ExpandLabel(suite.hash.New, c.resumptionSecret, "resumption",
+			nil, suite.hash.Size())
+	})
 
 	m := new(newSessionTicketMsgTLS13)
 
