@@ -36,6 +36,8 @@ type (
 	RenegotiationSupport         = tls.RenegotiationSupport
 	SessionState                 = tls.SessionState
 	SignatureScheme              = tls.SignatureScheme
+	UPKIRevocationConfig         = tls.UPKIRevocationConfig
+	UPKIRevocationPolicy         = tls.UPKIRevocationPolicy
 )
 
 const (
@@ -125,6 +127,14 @@ const (
 	QUICResumeSession               = tls.QUICResumeSession
 	QUICStoreSession                = tls.QUICStoreSession
 	QUICErrorEvent                  = tls.QUICErrorEvent
+
+	UPKIRevocationPolicyAllow   = tls.UPKIRevocationPolicyAllow
+	UPKIRevocationPolicyDefault = tls.UPKIRevocationPolicyDefault
+	UPKIRevocationPolicyReject  = tls.UPKIRevocationPolicyReject
+)
+
+var (
+	ErrUPKIRevoked = tls.ErrUPKIRevoked
 )
 
 func CipherSuites() []*CipherSuite {
