@@ -24,6 +24,8 @@ import (
 
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/sys/cpu"
+
+	"github.com/exclavenetwork/reality/internal/riscv64cpu"
 )
 
 // CipherSuite is a TLS cipher suite. Note that most functions in this package
@@ -365,8 +367,10 @@ var (
 	hasGCMAsmS390X   = cpu.S390X.HasAES && cpu.S390X.HasAESCTR && cpu.S390X.HasGHASH
 	hasGCMAsmPPC64   = runtime.GOARCH == "ppc64" || runtime.GOARCH == "ppc64le"
 	hasGCMAsmLOONG64 = cpu.Loong64.HasLSX
+	hasGCMAsmRISCV64 = cpu.RISCV64.HasV && cpu.RISCV64.HasZbb &&
+		riscv64cpu.HasZvkned && cpu.RISCV64.HasZvkg && cpu.RISCV64.VLENB >= 16
 
-	hasAESGCMHardwareSupport = hasGCMAsmAMD64 || hasGCMAsmARM64 || hasGCMAsmS390X || hasGCMAsmPPC64 || hasGCMAsmLOONG64
+	hasAESGCMHardwareSupport = hasGCMAsmAMD64 || hasGCMAsmARM64 || hasGCMAsmS390X || hasGCMAsmPPC64 || hasGCMAsmLOONG64 || hasGCMAsmRISCV64
 )
 
 var aesgcmCiphers = map[uint16]bool{
