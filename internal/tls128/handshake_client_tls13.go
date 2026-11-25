@@ -688,7 +688,7 @@ func (hs *clientHandshakeStateTLS13) readServerCertificate() error {
 	// See RFC 8446, Section 4.4.3.
 	// We don't use hs.hello.supportedSignatureAlgorithms because it might
 	// include PKCS#1 v1.5 and SHA-1, which TLS 1.3 only allows in certificates.
-	if !isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, supportedSignatureAlgorithms(c.vers, c.vers)) ||
+	if !isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, supportedSignatureAlgorithms(c.vers, c.vers, fips140Restrictions(c.config.noFIPS140Restrictions))) ||
 		!isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, signatureSchemesForPublicKey(c.vers, c.peerCertificates[0].PublicKey)) {
 		c.sendAlert(alertIllegalParameter)
 		return errors.New("tls: certificate used with invalid signature algorithm")
@@ -784,10 +784,11 @@ func (hs *clientHandshakeStateTLS13) sendClientCertificate() error {
 	}
 
 	cert, err := c.getClientCertificate(&CertificateRequestInfo{
-		AcceptableCAs:    hs.certReq.certificateAuthorities,
-		SignatureSchemes: hs.certReq.supportedSignatureAlgorithms,
-		Version:          c.vers,
-		ctx:              hs.ctx,
+		AcceptableCAs:         hs.certReq.certificateAuthorities,
+		SignatureSchemes:      hs.certReq.supportedSignatureAlgorithms,
+		Version:               c.vers,
+		noFIPS140Restrictions: c.config.noFIPS140Restrictions,
+		ctx:                   hs.ctx,
 	})
 	if err != nil {
 		return err
@@ -815,7 +816,8 @@ func (hs *clientHandshakeStateTLS13) sendClientCertificate() error {
 	certVerifyMsg := new(certificateVerifyMsg)
 	certVerifyMsg.hasSignatureAlgorithm = true
 
-	certVerifyMsg.signatureAlgorithm, err = selectSignatureScheme(c.vers, cert, hs.certReq.supportedSignatureAlgorithms)
+	certVerifyMsg.signatureAlgorithm, err = selectSignatureScheme(c.vers, cert, hs.certReq.supportedSignatureAlgorithms,
+		fips140Restrictions(c.config.noFIPS140Restrictions))
 	if err != nil {
 		// getClientCertificate returned a certificate incompatible with the
 		// CertificateRequestInfo supported signature algorithms.

@@ -1,4 +1,3 @@
-// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -653,7 +652,7 @@ func (hs *serverHandshakeState) doFullHandshake() error {
 		}
 		if c.vers >= VersionTLS12 {
 			certReq.hasSignatureAlgorithm = true
-			certReq.supportedSignatureAlgorithms = supportedSignatureAlgorithms(c.vers, c.vers)
+			certReq.supportedSignatureAlgorithms = supportedSignatureAlgorithms(c.vers, c.vers, fips140Restrictions(c.config.noFIPS140Restrictions))
 		}
 
 		// An empty list of certificateAuthorities signals to
@@ -974,7 +973,7 @@ func (c *Conn) processCertsFromClient(certificate Certificate) error {
 			return &CertificateVerificationError{UnverifiedCertificates: certs, Err: err}
 		}
 
-		c.verifiedChains, err = fipsAllowedChains(chains)
+		c.verifiedChains, err = fipsAllowedChains(chains, fips140Restrictions(c.config.noFIPS140Restrictions))
 		if err != nil {
 			c.sendAlert(alertBadCertificate)
 			return &CertificateVerificationError{UnverifiedCertificates: certs, Err: err}

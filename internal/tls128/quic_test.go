@@ -360,7 +360,7 @@ func TestQUICPostHandshakeClientAuthentication(t *testing.T) {
 	certReq := new(certificateRequestMsgTLS13)
 	certReq.ocspStapling = true
 	certReq.scts = true
-	certReq.supportedSignatureAlgorithms = supportedSignatureAlgorithms(VersionTLS13, VersionTLS13)
+	certReq.supportedSignatureAlgorithms = supportedSignatureAlgorithms(VersionTLS13, VersionTLS13, false)
 	certReqBytes, err := certReq.marshal()
 	if err != nil {
 		t.Fatal(err)

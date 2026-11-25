@@ -911,16 +911,17 @@ func TestCloneNonFuncFields(t *testing.T) {
 				NotCovered:  UPKIRevocationPolicyReject,
 				MissingSCTs: UPKIRevocationPolicyReject,
 			}))
-		case "mutex", "autoSessionTicketKeys", "sessionTicketKeys":
+		case "mutex", "autoSessionTicketKeys", "sessionTicketKeys", "noFIPS140Restrictions":
 			continue // these are unexported fields that are handled separately
 		case "RealityClientConfig", "RealityServerConfig":
 		default:
 			t.Errorf("all fields must be accounted for, but saw unknown field %q", fn)
 		}
 	}
-	// Set the unexported fields related to session ticket keys, which are copied with Clone().
+	// Set the unexported fields that are copied with Clone().
 	c1.autoSessionTicketKeys = []ticketKey{c1.ticketKeyFromBytes(c1.SessionTicketKey)}
 	c1.sessionTicketKeys = []ticketKey{c1.ticketKeyFromBytes(c1.SessionTicketKey)}
+	c1.noFIPS140Restrictions = true
 
 	c2 := c1.Clone()
 	if !reflect.DeepEqual(&c1, c2) {
@@ -2167,8 +2168,8 @@ func TestHandshakeMLKEM(t *testing.T) {
 func TestSupportedSignatureAlgorithmsMLDSAGating(t *testing.T) {
 	mldsaSchemes := []SignatureScheme{MLDSA44, MLDSA65, MLDSA87}
 
-	tls12Only := supportedSignatureAlgorithms(VersionTLS12, VersionTLS12)
-	tls12OnlyCert := enabledSignatureAlgorithms(VersionTLS12, VersionTLS12, sigAlgCertificate)
+	tls12Only := supportedSignatureAlgorithms(VersionTLS12, VersionTLS12, false)
+	tls12OnlyCert := enabledSignatureAlgorithms(VersionTLS12, VersionTLS12, sigAlgCertificate, false)
 	for _, s := range mldsaSchemes {
 		if slices.Contains(tls12Only, s) {
 			t.Errorf("supportedSignatureAlgorithms(TLS12, TLS12) contains %v; ML-DSA must not be advertised in TLS 1.2", s)
@@ -2177,8 +2178,8 @@ func TestSupportedSignatureAlgorithmsMLDSAGating(t *testing.T) {
 			t.Errorf("TLS 1.2 certificate signature algorithms contain %v; ML-DSA must not be advertised in TLS 1.2", s)
 		}
 	}
-	tls13Only := supportedSignatureAlgorithms(VersionTLS13, VersionTLS13)
-	tls13OnlyCert := enabledSignatureAlgorithms(VersionTLS13, VersionTLS13, sigAlgCertificate)
+	tls13Only := supportedSignatureAlgorithms(VersionTLS13, VersionTLS13, false)
+	tls13OnlyCert := enabledSignatureAlgorithms(VersionTLS13, VersionTLS13, sigAlgCertificate, false)
 	for _, s := range mldsaSchemes {
 		if !slices.Contains(tls13Only, s) {
 			t.Errorf("supportedSignatureAlgorithms(TLS13, TLS13) is missing %v", s)

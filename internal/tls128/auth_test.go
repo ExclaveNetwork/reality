@@ -50,7 +50,7 @@ func TestSignatureSelection(t *testing.T) {
 		t.Run(strconv.Itoa(testNo), func(t *testing.T) {
 			t.Parallel()
 
-			sigAlg, err := selectSignatureScheme(test.tlsVersion, &test.cert, test.peerSigAlgs)
+			sigAlg, err := selectSignatureScheme(test.tlsVersion, &test.cert, test.peerSigAlgs, false)
 			if err != nil {
 				t.Errorf("unexpected selectSignatureScheme error: %v", err)
 			}
@@ -121,7 +121,7 @@ func TestSignatureSelection(t *testing.T) {
 	}
 
 	for testNo, test := range badTests {
-		sigAlg, err := selectSignatureScheme(test.tlsVersion, &test.cert, test.peerSigAlgs)
+		sigAlg, err := selectSignatureScheme(test.tlsVersion, &test.cert, test.peerSigAlgs, false)
 		if err == nil {
 			t.Errorf("test[%d]: unexpected success, got %v", testNo, sigAlg)
 		}
@@ -169,7 +169,7 @@ func TestLegacyTypeAndHash(t *testing.T) {
 // TestSupportedSignatureAlgorithms checks that all supportedSignatureAlgorithms
 // have valid type and hash information.
 func TestSupportedSignatureAlgorithms(t *testing.T) {
-	for _, sigAlg := range supportedSignatureAlgorithms(VersionTLS12, VersionTLS13) {
+	for _, sigAlg := range supportedSignatureAlgorithms(VersionTLS12, VersionTLS13, false) {
 		sigType, hash, err := typeAndHashFromSignatureScheme(sigAlg)
 		if err != nil {
 			t.Errorf("%v: unexpected error: %v", sigAlg, err)

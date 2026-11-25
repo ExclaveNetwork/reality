@@ -685,7 +685,7 @@ func (c *Conn) processECHClientHello(outer *clientHelloMsg, echKeys []EncryptedC
 //
 // This extension is placed in the outer ClientHello derived from hello, as
 // specified in RFC 9849, Section 6.2.
-func newGreaseECHExtension(rand io.Reader, hello *clientHelloMsg) ([]byte, error) {
+func newGreaseECHExtension(rand io.Reader, hello *clientHelloMsg, fips140Restrictions bool) ([]byte, error) {
 	const echGreaseMaxNameLength = 128
 
 	kdfID := hpke.HKDFSHA256().ID()

@@ -500,7 +500,8 @@ func (hs *serverHandshakeStateTLS13) pickCertificate() error {
 	if certificate != nil {
 		hs.c.localCertificate = certificate.Certificate
 	}
-	hs.sigAlg, err = selectSignatureScheme(c.vers, certificate, hs.clientHello.supportedSignatureAlgorithms)
+	hs.sigAlg, err = selectSignatureScheme(c.vers, certificate, hs.clientHello.supportedSignatureAlgorithms,
+		fips140Restrictions(c.config.noFIPS140Restrictions))
 	if err != nil {
 		// getCertificate returned a certificate that is unsupported or
 		// incompatible with the client's signature algorithms.
@@ -859,7 +860,7 @@ func (hs *serverHandshakeStateTLS13) sendServerCertificate() error {
 		certReq.ocspStapling = true
 		certReq.scts = true
 		certReq.supportedSignatureAlgorithms, certReq.supportedSignatureAlgorithmsCert =
-			advertisedSignatureAlgorithms(c.vers, c.vers)
+			advertisedSignatureAlgorithms(c.vers, c.vers, fips140Restrictions(c.config.noFIPS140Restrictions))
 		if c.config.ClientCAs != nil {
 			certReq.certificateAuthorities = c.config.ClientCAs.Subjects()
 		}
@@ -1114,7 +1115,7 @@ func (hs *serverHandshakeStateTLS13) readClientCertificate() error {
 		// We don't use certReq.supportedSignatureAlgorithms because it might
 		// include PKCS#1 v1.5, which TLS 1.3 only allows in certificates, and it
 		// would require keeping the certificateRequestMsgTLS13 around in the hs.
-		if !isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, supportedSignatureAlgorithms(c.vers, c.vers)) ||
+		if !isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, supportedSignatureAlgorithms(c.vers, c.vers, fips140Restrictions(c.config.noFIPS140Restrictions))) ||
 			!isSupportedSignatureAlgorithm(certVerify.signatureAlgorithm, signatureSchemesForPublicKey(c.vers, c.peerCertificates[0].PublicKey)) {
 			c.sendAlert(alertIllegalParameter)
 			return errors.New("tls: client certificate used with invalid signature algorithm")

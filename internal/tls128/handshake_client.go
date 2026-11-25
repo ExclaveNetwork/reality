@@ -123,7 +123,7 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, *keySharePrivateKeys, *echCli
 
 	if maxVersion >= VersionTLS12 {
 		hello.supportedSignatureAlgorithms, hello.supportedSignatureAlgorithmsCert =
-			advertisedSignatureAlgorithms(minVersion, maxVersion)
+			advertisedSignatureAlgorithms(minVersion, maxVersion, fips140Restrictions(config.noFIPS140Restrictions))
 	}
 
 	var keyShareKeys *keySharePrivateKeys
@@ -207,7 +207,7 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, *keySharePrivateKeys, *echCli
 		// outer ClientHello is indistinguishable from one carrying real ECH.
 		// See RFC 9849, Section 6.2. Skipped if GODEBUG=tlsechgrease=0.
 		if godebug.Value("tlsechgrease") != "0" {
-			hello.encryptedClientHello, err = newGreaseECHExtension(config.rand(), hello)
+			hello.encryptedClientHello, err = newGreaseECHExtension(config.rand(), hello, fips140Restrictions(config.noFIPS140Restrictions))
 			if err != nil {
 				return nil, nil, nil, err
 			}
@@ -752,7 +752,7 @@ func (hs *clientHandshakeState) doFullHandshake() error {
 	if ok {
 		certRequested = true
 
-		cri := certificateRequestInfoFromMsg(hs.ctx, c.vers, certReq)
+		cri := certificateRequestInfoFromMsg(hs.ctx, c.vers, certReq, c.config.noFIPS140Restrictions)
 		if chainToSend, err = c.getClientCertificate(cri); err != nil {
 			c.sendAlert(alertInternalError)
 			return err
@@ -819,7 +819,8 @@ func (hs *clientHandshakeState) doFullHandshake() error {
 		}
 
 		if c.vers >= VersionTLS12 {
-			signatureAlgorithm, err := selectSignatureScheme(c.vers, chainToSend, certReq.supportedSignatureAlgorithms)
+			signatureAlgorithm, err := selectSignatureScheme(c.vers, chainToSend, certReq.supportedSignatureAlgorithms,
+				fips140Restrictions(c.config.noFIPS140Restrictions))
 			if err != nil {
 				c.sendAlert(alertHandshakeFailure)
 				return err
@@ -1157,7 +1158,7 @@ func (c *Conn) verifyServerCertificate(certificates [][]byte) error {
 				return &CertificateVerificationError{UnverifiedCertificates: certs, Err: err}
 			}
 
-			c.verifiedChains, err = fipsAllowedChains(chains)
+			c.verifiedChains, err = fipsAllowedChains(chains, fips140Restrictions(c.config.noFIPS140Restrictions))
 			if err != nil {
 				c.sendAlert(alertBadCertificate)
 				return &CertificateVerificationError{UnverifiedCertificates: certs, Err: err}
@@ -1180,7 +1181,7 @@ func (c *Conn) verifyServerCertificate(certificates [][]byte) error {
 			return &CertificateVerificationError{UnverifiedCertificates: certs, Err: err}
 		}
 
-		c.verifiedChains, err = fipsAllowedChains(chains)
+		c.verifiedChains, err = fipsAllowedChains(chains, fips140Restrictions(c.config.noFIPS140Restrictions))
 		if err != nil {
 			c.sendAlert(alertBadCertificate)
 			return &CertificateVerificationError{UnverifiedCertificates: certs, Err: err}
@@ -1223,11 +1224,12 @@ func (c *Conn) verifyServerCertificate(certificates [][]byte) error {
 
 // certificateRequestInfoFromMsg generates a CertificateRequestInfo from a TLS
 // <= 1.2 CertificateRequest, making an effort to fill in missing information.
-func certificateRequestInfoFromMsg(ctx context.Context, vers uint16, certReq *certificateRequestMsg) *CertificateRequestInfo {
+func certificateRequestInfoFromMsg(ctx context.Context, vers uint16, certReq *certificateRequestMsg, noFIPS140Restrictions bool) *CertificateRequestInfo {
 	cri := &CertificateRequestInfo{
-		AcceptableCAs: certReq.certificateAuthorities,
-		Version:       vers,
-		ctx:           ctx,
+		AcceptableCAs:         certReq.certificateAuthorities,
+		Version:               vers,
+		noFIPS140Restrictions: noFIPS140Restrictions,
+		ctx:                   ctx,
 	}
 
 	var rsaAvail, ecAvail bool
